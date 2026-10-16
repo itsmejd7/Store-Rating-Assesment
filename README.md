@@ -1,102 +1,102 @@
 # Store Rating App
 
-A full-stack web application where **normal users** browse and rate stores, **store owners** monitor their ratings, and **administrators** manage all users, stores, and ratings.
+A full-stack web application where users can browse stores and submit ratings. Store owners can view ratings for their stores, while administrators can manage users and stores.
 
-**Stack:** React 18 + Vite · Express.js · MySQL · JWT (httpOnly cookies) · bcrypt
+## Technologies Used
 
----
+- **Frontend:** React 18, Vite
+- **Backend:** Node.js, Express.js
+- **Database:** MySQL
+- **Authentication:** JWT and HTTP-only cookies
+- **Password Hashing:** bcrypt
 
 ## Project Structure
 
-```
+```text
 store-rating-app/
-├── backend/              Express.js API
+├── backend/
 │   ├── src/
-│   │   ├── app.js        Entry point
-│   │   ├── config/db.js  MySQL pool
-│   │   ├── middleware/   JWT auth + role guard
-│   │   ├── routes/       auth, admin, stores, ratings, owner
-│   │   └── controllers/  One file per route group
+│   │   ├── app.js
+│   │   ├── config/
+│   │   ├── middleware/
+│   │   ├── routes/
+│   │   └── controllers/
 │   ├── .env.example
 │   └── package.json
-├── frontend/             React + Vite SPA
+├── frontend/
 │   ├── src/
-│   │   ├── api/          Axios instance + per-resource helpers
-│   │   ├── components/   Navbar, ProtectedRoute, FormInput, StarRating
-│   │   ├── context/      AuthContext (user identity)
-│   │   └── pages/        auth/, admin/, user/, owner/, shared/
+│   │   ├── api/
+│   │   ├── components/
+│   │   ├── context/
+│   │   └── pages/
 │   ├── vite.config.js
 │   └── package.json
 └── database/
-    ├── schema.sql        Table definitions
-    └── seed.sql          Default admin account
+    ├── schema.sql
+    └── seed.sql
 ```
-
----
 
 ## Prerequisites
 
-| Tool | Minimum version |
-|------|----------------|
-| Node.js | 18 LTS |
-| npm | 9 |
-| MySQL | 8.0 |
+Install the following before running the application:
 
----
+- Node.js 18 or later
+- npm
+- MySQL 8.0 or later
 
-## 1 — Database Setup
+## Setup Instructions
 
-Open MySQL and run the two SQL files in order:
+### 1. Set up the database
 
-```bash
-mysql -u root -p < database/schema.sql
-mysql -u root -p < database/seed.sql
-```
+Start your MySQL server and execute the SQL files in the following order:
 
-Or paste them into MySQL Workbench / any client.
+1. `database/schema.sql`
+2. `database/seed.sql`
 
-This creates the `store_rating_db` database with three tables (`users`, `stores`, `ratings`) and inserts the default admin account.
+You can run them using MySQL Workbench or the MySQL command-line client.
 
----
+The schema creates the `store_rating_db` database and the required tables for users, stores, and ratings. The seed file inserts a default administrator account.
 
-## 2 — Backend Setup
+### 2. Configure the backend
+
+Open a terminal in the project directory and run:
 
 ```bash
 cd backend
-copy .env.example .env
 ```
 
-Edit `.env` and set your values:
+Create a `.env` file using `.env.example` as a reference.
 
-```
+Configure the following environment variables:
+
+```env
 PORT=5000
 DB_HOST=localhost
 DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=your_mysql_password
 DB_NAME=store_rating_db
-JWT_SECRET=a_long_random_string_at_least_32_chars
+JWT_SECRET=your_long_random_secret
 CLIENT_URL=http://localhost:5173
 NODE_ENV=development
 ```
 
-> [!IMPORTANT]
-> `JWT_SECRET` must be a long, random string. Never commit the real `.env` to source control.
+Replace the example database credentials and JWT secret with your local values. Do not commit `.env` to GitHub.
 
-Install dependencies and start:
+Install the dependencies and start the server:
 
 ```bash
 npm install
-npm run dev       # development (auto-restarts on file change)
-# or
-npm start         # production
+npm run dev
 ```
 
-The API listens on **http://localhost:5000**.
+The backend runs at `http://localhost:5000`.
 
----
+If your project provides an `init-db` script, you can use `npm run init-db` to initialize the database instead of manually executing the SQL files. Do not run both methods unnecessarily.
 
-## 3 — Frontend Setup
+### 3. Configure the frontend
+
+Open another terminal:
 
 ```bash
 cd frontend
@@ -104,139 +104,135 @@ npm install
 npm run dev
 ```
 
-The app opens at **http://localhost:5173**. The Vite dev server proxies all `/api/*` requests to the backend so no CORS configuration is needed during development.
+Open `http://localhost:5173` in your browser.
 
----
+The frontend communicates with the Express backend. In development, the Vite proxy is configured to forward `/api` requests to the backend.
 
-## 4 — Default Admin Account
+## Default Administrator Account
 
-After running `seed.sql`:
+After successfully importing the seed data, use the following credentials:
 
-| Field    | Value              |
-|----------|--------------------|
-| Email    | admin@example.com  |
-| Password | Admin@123          |
-| Role     | Admin              |
+| Field | Value |
+|---|---|
+| Email | `admin@example.com` |
+| Password | `Admin@123` |
 
-> [!CAUTION]
-> Change this password immediately after your first login using the **Password** menu item.
+Change the default password after your first login.
 
----
+## User Roles
 
-## 5 — Typical Setup Workflow
+### System Administrator
 
-1. Create a **Store Owner** user: Admin → Users → Add User → role: Store Owner
-2. Create a **Store**: Admin → Stores → Add Store → pick the owner from the dropdown
-3. Register a **normal user** via the public `/register` page
-4. Log in as the normal user → browse stores → submit a rating
-5. Log in as the store owner → view the Dashboard to see ratings
+- View dashboard statistics for users, stores, and ratings.
+- Create users, administrators, store owners, and stores.
+- View user and store details.
+- Search, filter, and sort listings.
 
----
+### Normal User
 
-## 6 — User Roles and Permissions
+- Register and log in.
+- Browse and search stores by name and address.
+- View overall store ratings.
+- Submit a rating from 1 to 5.
+- Update a previously submitted rating.
+- Change their password and log out.
 
-| Feature | Admin | User | Store Owner |
-|---------|:-----:|:----:|:-----------:|
-| Register (public) | — | ✓ | — |
-| Login / Logout | ✓ | ✓ | ✓ |
-| Change own password | ✓ | ✓ | ✓ |
-| View admin dashboard | ✓ | — | — |
-| Create users / admins / store owners | ✓ | — | — |
-| Create stores | ✓ | — | — |
-| List & filter all users | ✓ | — | — |
-| List & filter all stores | ✓ | — | — |
-| View store details + ratings (admin) | ✓ | — | — |
-| Browse stores with search | — | ✓ | — |
-| Submit rating (1–5) | — | ✓ | — |
-| Update own rating | — | ✓ | — |
-| View own store dashboard | — | — | ✓ |
-| View list of raters | — | — | ✓ |
+### Store Owner
 
-Roles are enforced **server-side** on every request via JWT middleware and a role guard. Frontend UI hides irrelevant links but backend always re-checks.
+- View the average rating of their store.
+- View users who submitted ratings.
+- Change their password and log out.
 
----
+## Main API Endpoints
 
-## 7 — API Reference
+### Authentication — `/api/auth`
 
-### Authentication (`/api/auth`)
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| POST | `/register` | Public | Create user account |
-| POST | `/login` | Public | Get JWT cookie |
-| POST | `/logout` | Any | Clear JWT cookie |
-| PATCH | `/change-password` | Any | Update password |
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/register` | Register a normal user |
+| POST | `/login` | Log in |
+| POST | `/logout` | Log out |
+| PATCH | `/change-password` | Change password |
 
-### Admin (`/api/admin`) — role: admin
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/dashboard` | Counts of users, stores, ratings |
-| GET | `/users` | List users (`?name&email&role&sort&order`) |
-| POST | `/users` | Create any-role user |
-| GET | `/users/:id` | User details |
-| GET | `/stores` | List stores with avg rating |
-| POST | `/stores` | Create store |
-| GET | `/stores/:id` | Store details + all ratings |
+### Administrator — `/api/admin`
 
-### Stores (`/api/stores`) — role: user
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/` | List stores with avg rating + caller's rating (`?name&address`) |
-| GET | `/:id` | Store detail + caller's rating |
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/dashboard` | View dashboard statistics |
+| GET | `/users` | List and filter users |
+| POST | `/users` | Create a user |
+| GET | `/users/:id` | View user details |
+| GET | `/stores` | List stores |
+| POST | `/stores` | Create a store |
+| GET | `/stores/:id` | View store details and ratings |
 
-### Ratings (`/api/ratings`) — role: user
-| Method | Path | Description |
-|--------|------|-------------|
-| POST | `/` | Submit rating `{ store_id, value }` |
-| PUT | `/:id` | Update own rating `{ value }` |
+### Stores — `/api/stores`
 
-### Owner (`/api/owner`) — role: store_owner
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/dashboard` | Store info, avg rating, rater list |
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/` | List and search stores |
+| GET | `/:id` | View store details |
 
----
+### Ratings — `/api/ratings`
 
-## 8 — Validation Rules
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/` | Submit a rating |
+| PUT | `/:id` | Update an existing rating |
 
-| Field | Rule |
-|-------|------|
-| Name | 2–60 characters |
-| Email | Valid format, unique per table |
-| Password | 8–72 chars, ≥1 uppercase, ≥1 special character (`!@#$%^&*`) |
-| Address | Optional, max 400 chars |
-| Rating value | Integer 1–5 |
+### Store Owner — `/api/owner`
 
----
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/dashboard` | View store rating statistics and raters |
 
-## 9 — Authentication Design
+Protected endpoints require authentication and the appropriate user role.
 
-- JWT is signed with `JWT_SECRET` and expires in **24 hours**.
-- Stored in an `httpOnly; SameSite=Strict` cookie — not accessible to JavaScript, preventing XSS theft.
-- Non-sensitive user info (`id`, `name`, `email`, `role`) is stored in `localStorage` purely to drive the React UI; the cookie is what the backend actually validates.
-- Logout clears the cookie server-side and removes localStorage data.
+## Validation Rules
 
----
+Implement the validation rules specified in the assignment:
 
-## 10 — Known Limitations
+| Field | Requirement |
+|---|---|
+| Name | 20–60 characters |
+| Address | Maximum 400 characters |
+| Password | 8–16 characters, with at least one uppercase letter and one special character |
+| Email | Valid email format |
+| Rating | Integer from 1 to 5 |
 
-- No email verification on registration.
-- No admin interface to delete or edit existing users/stores.
-- No pagination on listing endpoints (all records are returned).
-- No automated tests included in this version.
-- JWT tokens cannot be revoked before they expire (no token blacklist/refresh mechanism).
+Validate inputs on both the frontend and backend.
 
----
+## Authentication and Security
 
-## 11 — Development Scripts
+- Passwords are hashed before being stored.
+- JWT authentication uses HTTP-only cookies.
+- Role-based access is enforced on protected backend routes.
+- Database credentials and JWT secrets are stored in environment variables.
+- Users should only be able to modify their own ratings.
+- Store owners should only be able to access data belonging to their stores.
+
+## Development Commands
+
+### Backend
 
 ```bash
-# Backend
 cd backend
-npm run dev      # node --watch (Node 18+)
-
-# Frontend
-cd frontend
-npm run dev      # Vite HMR dev server
-npm run build    # Production build → frontend/dist/
-npm run preview  # Preview production build locally
+npm run dev
 ```
+
+### Frontend
+
+```bash
+cd frontend
+npm run dev
+npm run build
+npm run preview
+```
+
+## Notes
+
+- Email verification is not currently included.
+- Pagination and additional user/store editing features may be added in future versions.
+- Automated tests are not included in this version.
+- Verify the actual implementation and configuration before deployment.
+
